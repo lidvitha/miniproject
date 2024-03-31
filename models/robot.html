@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Interactive 3D Robot</title>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        background-color: #111; /* Dark background */
+      }
+      canvas {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+      // Set up the scene
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(
+        75,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000
+      );
+      const renderer = new THREE.WebGLRenderer();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+
+      // Create materials for the robot
+      const robotMaterial = new THREE.MeshPhongMaterial({ color: 0x8a2be2 }); // Purple color
+
+      // Create body parts of the robot
+      const bodyGeometry = new THREE.BoxGeometry(1, 1.5, 0.5); // Adjusted body proportions
+      const body = new THREE.Mesh(bodyGeometry, robotMaterial);
+      scene.add(body);
+
+      const headGeometry = new THREE.SphereGeometry(0.3, 32, 32); // Smaller head
+      const head = new THREE.Mesh(headGeometry, robotMaterial);
+      head.position.y = 0.75;
+      scene.add(head);
+
+      const armGeometry = new THREE.BoxGeometry(0.1, 0.5, 0.1); // Adjusted arm proportions
+      const leftArm = new THREE.Mesh(armGeometry, robotMaterial);
+      leftArm.position.set(0.6, 0.25, 0); // Adjusted arm position
+      scene.add(leftArm);
+
+      const rightArm = new THREE.Mesh(armGeometry, robotMaterial);
+      rightArm.position.set(-0.6, 0.25, 0); // Adjusted arm position
+      scene.add(rightArm);
+
+      const legGeometry = new THREE.BoxGeometry(0.2, 0.7, 0.2); // Adjusted leg proportions
+      const leftLeg = new THREE.Mesh(legGeometry, robotMaterial);
+      leftLeg.position.set(0.3, -0.75, 0); // Adjusted leg position
+      scene.add(leftLeg);
+
+      const rightLeg = new THREE.Mesh(legGeometry, robotMaterial);
+      rightLeg.position.set(-0.3, -0.75, 0); // Adjusted leg position
+      scene.add(rightLeg);
+
+      // Add lighting
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+      scene.add(ambientLight);
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+      scene.add(directionalLight);
+
+      // Position lights
+      directionalLight.position.set(0, 10, 5);
+
+      // Position the camera
+      camera.position.z = 3;
+
+      // Handle touch movements for body rotation
+      let touchStartX = 0;
+      let touchStartY = 0;
+
+      function onTouchStart(event) {
+        touchStartX = event.touches[0].clientX;
+        touchStartY = event.touches[0].clientY;
+      }
+
+      function onTouchMove(event) {
+        const touchEndX = event.touches[0].clientX;
+        const touchEndY = event.touches[0].clientY;
+
+        const deltaX = touchEndX - touchStartX;
+        const deltaY = touchEndY - touchStartY;
+
+        // Rotate the body based on touch input
+        body.rotation.y += deltaX * 0.01;
+        body.rotation.x += deltaY * 0.01;
+
+        // Rotate arms and legs based on touch input
+        leftArm.rotation.x += deltaY * 0.01;
+        rightArm.rotation.x += deltaY * 0.01;
+        leftLeg.rotation.x += deltaY * 0.01;
+        rightLeg.rotation.x += deltaY * 0.01;
+
+        leftArm.rotation.z += deltaX * 0.01;
+        rightArm.rotation.z += deltaX * 0.01;
+        leftLeg.rotation.z += deltaX * 0.01;
+        rightLeg.rotation.z += deltaX * 0.01;
+
+        touchStartX = touchEndX;
+        touchStartY = touchEndY;
+      }
+
+      document.addEventListener("touchstart", onTouchStart, false);
+      document.addEventListener("touchmove", onTouchMove, false);
+
+      // Animated background with dynamic motion and bright colors
+      const backgroundGeometry = new THREE.PlaneGeometry(50, 50);
+      const backgroundMaterial = new THREE.MeshBasicMaterial({
+        side: THREE.DoubleSide,
+      });
+
+      // Function to generate random bright colors
+      function getRandomColor() {
+        return "#" + Math.floor(Math.random() * 16777215).toString(16);
+      }
+
+      // Change background color at intervals for a slower effect
+      function changeBackgroundColor() {
+        backgroundMaterial.color.set(getRandomColor());
+        renderer.render(scene, camera);
+        setTimeout(changeBackgroundColor, 500); // Change every 500 milliseconds (adjust as needed)
+      }
+      changeBackgroundColor();
+
+      const background = new THREE.Mesh(backgroundGeometry, backgroundMaterial);
+      scene.add(background);
+
+      // Rotate the background for dynamic motion
+      function animateBackground() {
+        background.rotation.z += 0.01; // Rotate the background
+        renderer.render(scene, camera);
+        requestAnimationFrame(animateBackground);
+      }
+      animateBackground();
+
+      // Render loop
+      function animate() {
+        requestAnimationFrame(animate);
+        renderer.render(scene, camera);
+      }
+      animate();
+    </script>
+  </body>
+</html>

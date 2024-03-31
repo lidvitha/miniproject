@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive 3D Cube with Background Movement</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    // Set up the scene
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // Create materials for each face of the cube
+    const materials = [
+      new THREE.MeshPhongMaterial({ color: 0xff0000 }), // Red
+      new THREE.MeshPhongMaterial({ color: 0x00ff00 }), // Green
+      new THREE.MeshPhongMaterial({ color: 0x0000ff }), // Blue
+      new THREE.MeshPhongMaterial({ color: 0xffff00 }), // Yellow
+      new THREE.MeshPhongMaterial({ color: 0xff00ff }), // Magenta
+      new THREE.MeshPhongMaterial({ color: 0x00ffff })  // Cyan
+    ];
+
+    // Create a cube with the materials
+    const geometry = new THREE.BoxGeometry(2, 2, 2);
+    const cube = new THREE.Mesh(geometry, materials);
+    scene.add(cube);
+
+    // Add a rotating sphere as background
+    const backgroundSphereGeometry = new THREE.SphereGeometry(50, 32, 32);
+    const backgroundSphereMaterial = new THREE.MeshBasicMaterial({ color: 0x666666, wireframe: true });
+    const backgroundSphere = new THREE.Mesh(backgroundSphereGeometry, backgroundSphereMaterial);
+    scene.add(backgroundSphere);
+
+    // Add lighting
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    scene.add(ambientLight);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+    scene.add(directionalLight);
+
+    // Position lights
+    directionalLight.position.set(0, 10, 5);
+
+    // Position the camera
+    camera.position.z = 5;
+
+    // Render loop
+    function animate() {
+      requestAnimationFrame(animate);
+      cube.rotation.x += 0.01;
+      cube.rotation.y += 0.01;
+      backgroundSphere.rotation.y += 0.005; // Rotate the background sphere
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    // Handle touch movements
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    function onTouchStart(event) {
+      touchStartX = event.touches[0].clientX;
+      touchStartY = event.touches[0].clientY;
+    }
+
+    function onTouchMove(event) {
+      const touchEndX = event.touches[0].clientX;
+      const touchEndY = event.touches[0].clientY;
+
+      const deltaX = touchEndX - touchStartX;
+      const deltaY = touchEndY - touchStartY;
+
+      cube.rotation.y += deltaX * 0.01;
+      cube.rotation.x += deltaY * 0.01;
+
+      touchStartX = touchEndX;
+      touchStartY = touchEndY;
+    }
+
+    function onTouchZoom(event) {
+      camera.position.z += event.deltaY * 0.01;
+    }
+
+    document.addEventListener('touchstart', onTouchStart, false);
+    document.addEventListener('touchmove', onTouchMove, false);
+    document.addEventListener('wheel', onTouchZoom, false);
+  </script>
+</body>
+</html>

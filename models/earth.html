@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive 3D Earth with Starry Sky Background</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    // Set up the scene
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // Create Earth textures
+    const textureLoader = new THREE.TextureLoader();
+    const earthTexture = textureLoader.load('https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg');
+    const earthNormalMap = textureLoader.load('https://threejs.org/examples/textures/planets/earth_normalmap_2048.jpg');
+    const earthSpecularMap = textureLoader.load('https://threejs.org/examples/textures/planets/earth_specular_2048.jpg');
+    const earthMaterial = new THREE.MeshPhongMaterial({
+      map: earthTexture,
+      normalMap: earthNormalMap,
+      specularMap: earthSpecularMap
+    });
+
+    // Create Earth sphere
+    const earthGeometry = new THREE.SphereGeometry(1, 32, 32);
+    const earth = new THREE.Mesh(earthGeometry, earthMaterial);
+    scene.add(earth);
+
+    // Add a starry sky background
+    const backgroundTexture = textureLoader.load('https://threejs.org/examples/textures/galaxy_starfield.png');
+    const backgroundMaterial = new THREE.MeshBasicMaterial({ map: backgroundTexture, side: THREE.BackSide });
+    const backgroundSphereGeometry = new THREE.SphereGeometry(1000, 32, 32);
+    const backgroundSphere = new THREE.Mesh(backgroundSphereGeometry, backgroundMaterial);
+    scene.add(backgroundSphere);
+
+    // Add lighting
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1); // Increased ambient light intensity
+    scene.add(ambientLight);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1); // Increased directional light intensity
+    scene.add(directionalLight);
+
+    // Position lights
+    directionalLight.position.set(0, 10, 5);
+
+    // Position the camera
+    camera.position.z = 5;
+
+    // Render loop
+    function animate() {
+      requestAnimationFrame(animate);
+      earth.rotation.y += 0.005; // Rotate the Earth
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    // Handle touch movements
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    function onTouchStart(event) {
+      touchStartX = event.touches[0].clientX;
+      touchStartY = event.touches[0].clientY;
+    }
+
+    function onTouchMove(event) {
+      const touchEndX = event.touches[0].clientX;
+      const touchEndY = event.touches[0].clientY;
+
+      const deltaX = touchEndX - touchStartX;
+      const deltaY = touchEndY - touchStartY;
+
+      earth.rotation.y += deltaX * 0.01;
+      earth.rotation.x += deltaY * 0.01;
+
+      touchStartX = touchEndX;
+      touchStartY = touchEndY;
+    }
+
+    function onTouchZoom(event) {
+      camera.position.z += event.deltaY * 0.01;
+    }
+
+    document.addEventListener('touchstart', onTouchStart, false);
+    document.addEventListener('touchmove', onTouchMove, false);
+    document.addEventListener('wheel', onTouchZoom, false);
+  </script>
+</body>
+</html>

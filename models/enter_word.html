@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Enter Word</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f8f9fa;
+        text-align: center;
+        padding-top: 100px;
+      }
+      h1 {
+        color: #333;
+        font-size: 2.5em;
+        margin-bottom: 20px;
+      }
+      form {
+        margin-top: 20px;
+      }
+      input[type="text"] {
+        padding: 10px;
+        width: 300px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        font-size: 1.1em;
+        margin-right: 10px;
+      }
+      input[type="submit"] {
+        padding: 10px 20px;
+        background-color: #007bff;
+        border: none;
+        color: #fff;
+        font-size: 1.1em;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+      input[type="submit"]:hover {
+        background-color: #0056b3;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+      }
+      .container p {
+        color: #666;
+        font-size: 1.1em;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Enter a Word</h1>
+      <p>Enter a word below or speak to explore:</p>
+      <button id="voiceButton">Use Voice</button>
+      <form id="wordForm">
+        <input type="text" id="wordInput" placeholder="Enter a word" />
+        <input type="submit" value="Submit" />
+      </form>
+    </div>
+
+    <script>
+      document
+        .getElementById("wordForm")
+        .addEventListener("submit", function (event) {
+          event.preventDefault();
+          var word = document.getElementById("wordInput").value.toLowerCase();
+          redirectToPage(word);
+        });
+
+      function redirectToPage(word) {
+        var redirectUrl = "";
+
+        switch (word) {
+          case "cube":
+            redirectUrl = "/models/3d.html";
+            break;
+          case "planet":
+            redirectUrl = "/index.html";
+            break;
+          case "robot":
+            redirectUrl = "robot.html";
+            break;
+
+          // Add more cases for other words
+          default:
+            alert("Unknown word. Please try again.");
+            return; // Exit without redirecting
+        }
+
+        // Redirect to the appropriate page
+        window.location.href = redirectUrl;
+      }
+
+      document
+        .getElementById("voiceButton")
+        .addEventListener("click", function () {
+          startVoiceRecognition();
+        });
+
+      // Voice recognition
+      var recognition;
+
+      function startVoiceRecognition() {
+        if ("webkitSpeechRecognition" in window) {
+          recognition = new webkitSpeechRecognition();
+          recognition.continuous = false;
+          recognition.interimResults = false;
+
+          recognition.onresult = function (event) {
+            var transcript = event.results[0][0].transcript.toLowerCase();
+            document.getElementById("wordInput").value = transcript;
+            recognition.stop();
+            redirectToPage(transcript);
+          };
+
+          recognition.onerror = function (event) {
+            console.error("Speech recognition error:", event.error);
+          };
+
+          recognition.start();
+        } else {
+          console.log("Speech recognition not supported.");
+        }
+      }
+    </script>
+  </body>
+</html>
